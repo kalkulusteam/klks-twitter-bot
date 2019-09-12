@@ -1,0 +1,6 @@
+/node_modules
+/dist
+.env
+/public/vault/*
+log
+/klks-decypher/node_modules
