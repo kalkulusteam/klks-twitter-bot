@@ -21,8 +21,8 @@ class App {
     app.express.use(cors())
     
     app.express.get('/',Interface.rendervue)
-    //app.express.get('/twitter/request-token',Twitter.getAuth)
-    //app.express.get('/twitter/callback',Twitter.getAccessToken)
+    app.express.get('/twitter/request-token',Twitter.getAuth)
+    app.express.get('/twitter/callback',Twitter.getAccessToken)
     app.express.get('/check/:opid',Wallet.checkOPID)
     
     if(process.env.TWITTER_USERNAME !== undefined){

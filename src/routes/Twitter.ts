@@ -206,14 +206,14 @@ export async function tipuser(twitter_user, action, id = '', amount, coin) {
                 console.log('ASKING FOR A NEW ADDRESS')
                 var wallet = new Crypto.Wallet;
                 wallet.request('getnewaddress').then(function(address){
-                    var newAddr = address
+                    var newAddr = address['result']
                     if(newAddr !== undefined){
                         wallet.request('dumpprivkey', [newAddr]).then(async function(privkey){
                             var buf = crypto.randomBytes(16);
                             var password = buf.toString('hex');
                             var newwallet = {
                                 address: newAddr,
-                                privkey: privkey
+                                privkey: privkey['result']
                             }
                             const cipher = crypto.createCipher('aes-256-cbc', password);
                             let wallethex = cipher.update(JSON.stringify(newwallet), 'utf8', 'hex');
@@ -224,7 +224,7 @@ export async function tipuser(twitter_user, action, id = '', amount, coin) {
 
                             fs.appendFile('public/vault/' + newAddr + '.klks', walletstore, function (err) {
                                 if (err) throw err;
-                                console.log('ADDRESS '+ newAddr +' SUCCESSFULLY CREATED! PWD IS ' + password)
+                                //console.log('ADDRESS '+ newAddr +' SUCCESSFULLY CREATED! PWD IS ' + password)
                             });
 
                             var message_text = "Your Kalkulus (KLKS) address have been created!\r\n"
