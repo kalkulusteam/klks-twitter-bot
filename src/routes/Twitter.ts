@@ -328,7 +328,7 @@ export async function message(twitter_user, message) {
                         response(false)
                     }
                 }else{
-                    console.log(data)
+                    console.log('CAN\'T SEND MESSAGE TO USER BECAUSE OF NO FOLLOW')
                     response(false)
                 }
             })
