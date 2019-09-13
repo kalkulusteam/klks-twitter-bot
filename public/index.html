@@ -14,6 +14,7 @@
         <script src="https://unpkg.com/vue@latest/dist/vue.min.js"></script>
         <script src="https://unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue.min.js"></script>
         <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+        <link href="https://fonts.googleapis.com/css?family=Roboto+Mono&display=swap" rel="stylesheet">
         <script type="text/javascript" src="/klks.js"></script>
         <link rel=icon href="/fav.png">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -22,8 +23,8 @@
         body{
             background:#000;
             color:#fff;
-            font-family: 'bai_jamjureeregular';
-            font-size: 24px;
+            font-family: 'Roboto Mono';
+            font-size: 13px;
         }
     </style>
     <body>
@@ -31,16 +32,17 @@
             <div class="container">
                 <div class="row">
                     <div class="col-sm-6 offset-sm-3 text-center">
+                        <img src="https://kalkul.us/wp/wp-content/uploads/2019/05/round_white-60x60-3.png" style="margin:30px 0 10px 0">
                         <h1>KLKS TIPBOT</h1>
-                        Please follow my instructions and claim your $KLKS!<br><br>
+                        Please follow the instructions and claim your $KLKS!<br><br>
                         1) Download the file from the link i sent via DM.<br>
-                        2) Close your internet connection now.<br>
+                        2) You can close the connection now, this code works offline.<br>
                         3) Select your .klks file and write the password:
                         <b-form-file
                             style="overflow: hidden"
                             v-model="file"
-                            placeholder="Choose klks file..."
-                            drop-placeholder="Drop klks file here..."
+                            placeholder="Choose .klks file..."
+                            drop-placeholder="Drop .klks file here..."
                             @change="loadWalletFromFile"
                         ></b-form-file>
                         <b-input-group prepend="Password">
