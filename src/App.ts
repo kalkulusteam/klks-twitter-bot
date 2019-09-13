@@ -32,7 +32,7 @@ class App {
       setInterval(function(){
         Twitter.followers(process.env.TWITTER_USERNAME)
         Twitter.mentions(process.env.TWITTER_USERNAME)
-      },180000)
+      },360000)
     }
 
     if(process.env.TELEGRAM_TOKEN !== undefined){
