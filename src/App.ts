@@ -26,7 +26,9 @@ class App {
     app.express.get('/check/:opid',Wallet.checkOPID)
     
     if(process.env.TWITTER_USERNAME !== undefined){
+      Twitter.botfollowers()
       setInterval(function(){
+        Twitter.botfollowers()
         Twitter.followers(process.env.TWITTER_USERNAME)
         Twitter.mentions(process.env.TWITTER_USERNAME)
       },360000)
