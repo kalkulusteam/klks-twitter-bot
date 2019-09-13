@@ -328,6 +328,7 @@ export async function message(twitter_user, message) {
                         response(false)
                     }
                 }else{
+                    console.log(data)
                     response(false)
                 }
             })
