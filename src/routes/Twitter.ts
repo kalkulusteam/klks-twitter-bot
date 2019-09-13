@@ -302,21 +302,31 @@ export async function message(twitter_user, message) {
         console.log('SENDING MESSAGE TO ' + twitter_user)
         var twitter_id = await get("USER_" + twitter_user)
         if(twitter_id !== null){
-            if(testmode === false){
-                var msg = {"event": {"type": "message_create", "message_create": {"target": {"recipient_id": twitter_id}, "message_data": {"text": message}}}}
-                Twitter.post('direct_messages/events/new', msg, function(err, data){
+            Twitter.get('friendships/lookup', {user_id: twitter_id}, async function(err, data) {
+                if(data.connections[0] == 'followed by'){
                     if(err){
                         console.log(err.message)
                     }
-                    if(data.event !== undefined){
-                        response(true)
+                    if(testmode === false){
+                        var msg = {"event": {"type": "message_create", "message_create": {"target": {"recipient_id": twitter_id}, "message_data": {"text": message}}}}
+                        Twitter.post('direct_messages/events/new', msg, function(err, data){
+                            if(err){
+                                console.log(err.message)
+                            }
+                            if(data.event !== undefined){
+                                response(true)
+                            }else{
+                                response(false)
+                            }
+                        })
                     }else{
-                        response(false)
+                        response(true)
                     }
-                })
-            }else{
-                response(true)
-            }
+                }else{
+                    console.log('CAN\'T SEND MESSAGE TO USER BECAUSE OF NO FOLLOW')
+                    response(false)
+                }
+            })
         }else{
             response(false)
             console.log("CAN'T FIND USER ID")
