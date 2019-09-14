@@ -159,12 +159,17 @@ export async function mentions(twitter_user) {
                             if(elapsed > parseInt(process.env.MIN_DAYS)){
                                 db.set('USER_' + user_mention, mentions[index].user.id_str)
                                 newmentions++
-                                var success = await tipuser(user_mention,'MENTION', mention_id, process.env.TIP_MENTION, process.env.COIN)
-                                if(success !== false){
-                                    db.sadd('MENTIONS_' + twitter_user, mention_id)
-                                    console.log('SENT WAS OK, STORING INFORMATION')
+
+                                if(global['followers'].indexOf(parseInt(mentions[index].user.id_str)) !== -1){
+                                    var success = await tipuser(user_mention,'MENTION', mention_id, process.env.TIP_MENTION, process.env.COIN)
+                                    if(success !== false){
+                                        db.sadd('MENTIONS_' + twitter_user, mention_id)
+                                        console.log('SENT WAS OK, STORING INFORMATION')
+                                    }else{
+                                        console.log('SENT WAS NOT SUCCESSFUL')
+                                    }
                                 }else{
-                                    console.log('SENT WAS NOT SUCCESSFUL')
+                                    console.log('USER DON\'T FOLLOW BOT')
                                 }
                             }else{
                                 console.log('USER '+user_mention+' IS TOO YOUNG.')

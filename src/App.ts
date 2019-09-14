@@ -27,6 +27,8 @@ class App {
     
     if(process.env.TWITTER_USERNAME !== undefined){
       Twitter.botfollowers()
+      Twitter.followers(process.env.TWITTER_USERNAME)
+      Twitter.mentions(process.env.TWITTER_USERNAME)
       setInterval(function(){
         Twitter.botfollowers()
         Twitter.followers(process.env.TWITTER_USERNAME)
