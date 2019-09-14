@@ -85,13 +85,9 @@ export function getAccessToken(req: express.Request, res: express.res) {
 }
 export async function botfollowers() {
     console.log('LOOKING FOR @'+process.env.BOT_PROFILE+' FOLLOWER')
-    Twitter.get('followers/list', { screen_name: process.env.BOT_PROFILE },function(err, data){
+    Twitter.get('followers/ids', { screen_name: process.env.BOT_PROFILE },function(err, data){
         if (!err) {
-            var followers = []
-            for(var i in data.users){
-                followers.push(data.users[i].screen_name)
-            }
-            global['followers'] = followers
+            global['followers'] = data.ids
         }else{
             console.log('ERROR WHILE GETTING FOLLOWERS LIST!', err.message)
         }
@@ -316,7 +312,7 @@ export async function message(twitter_user, message) {
         console.log('SENDING MESSAGE TO ' + twitter_user)
         var twitter_id = await get("USER_" + twitter_user)
         if(twitter_id !== null){
-            if(global['followers'].indexOf(twitter_user) !== -1){
+            if(global['followers'].indexOf(twitter_id) !== -1){
                 if(testmode === false){
                     var msg = {"event": {"type": "message_create", "message_create": {"target": {"recipient_id": twitter_id}, "message_data": {"text": message}}}}
                     Twitter.post('direct_messages/events/new', msg, function(err, data){
