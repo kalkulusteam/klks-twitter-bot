@@ -6,6 +6,7 @@ const {promisify} = require('util')
 const getmembers = promisify(db.smembers).bind(db)
 const get = promisify(db.get).bind(db)
 import * as Crypto from '../libs/Crypto'
+var CoinKey = require('coinkey')
 var crypto = require('crypto');
 var axios = require('axios');
 var twitterlogin = require("node-twitter-api")
@@ -14,6 +15,12 @@ var config = require('../config.js');
 var testmode = process.env.TESTMODE.toLowerCase() == 'true' ? true : false;
 var exec = require('child_process').exec;
  
+var coinInfo = {
+    private: 0xae,
+    public: 0x2e,
+    scripthash: 0x0d
+}
+
 if(testmode === true){
     console.log('\x1b[33m%s\x1b[0m', 'RUNNING TWITTER IN TEST MODE')
 }
@@ -215,62 +222,57 @@ export async function tipuser(twitter_user, action, id = '', amount, coin) {
                 response(tx)
             }else{
                 //CREATE ADDRESS FOR USER
-                var newAddr = ''
-                var buf = crypto.randomBytes(128);
-                var random = buf.toString('hex');
-                console.log('ASKING FOR A NEW ADDRESS')
-                var wallet = new Crypto.Wallet;
-                wallet.request('getnewaddress').then(function(address){
-                    var newAddr = address['result']
-                    if(newAddr !== undefined){
-                        wallet.request('dumpprivkey', [newAddr]).then(async function(privkey){
-                            var buf = crypto.randomBytes(16);
-                            var password = buf.toString('hex');
-                            var newwallet = {
-                                address: newAddr,
-                                privkey: privkey['result']
-                            }
-                            const cipher = crypto.createCipher('aes-256-cbc', password);
-                            let wallethex = cipher.update(JSON.stringify(newwallet), 'utf8', 'hex');
-                            wallethex += cipher.final('hex');
+                var ck = CoinKey.createRandom(coinInfo)
+                var pub = ck.publicAddress;
+                var prv = ck.privateWif;
+                var key = ck.publicKey.toString('hex');
+                var newAddr = pub
+                if(newAddr !== undefined){
+                        var buf = crypto.randomBytes(16);
+                        var password = buf.toString('hex');
+                        var newwallet = {
+                            address: newAddr,
+                            privkey: prv
+                        }
+                        const cipher = crypto.createCipher('aes-256-cbc', password);
+                        let wallethex = cipher.update(JSON.stringify(newwallet), 'utf8', 'hex');
+                        wallethex += cipher.final('hex');
 
-                            var walletstore = wallethex;
-                            var fs = require('fs');
+                        var walletstore = wallethex;
+                        var fs = require('fs');
 
-                            fs.appendFile('public/vault/' + newAddr + '.klks', walletstore, function (err) {
-                                if (err) throw err;
-                                //console.log('ADDRESS '+ newAddr +' SUCCESSFULLY CREATED! PWD IS ' + password)
-                            });
+                        fs.appendFile('public/vault/' + newAddr + '.klks', walletstore, function (err) {
+                            if (err) throw err;
+                            //console.log('ADDRESS '+ newAddr +' SUCCESSFULLY CREATED! PWD IS ' + password)
+                        });
 
-                            var message_text = "Your Kalkulus (KLKS) address have been created!\r\n"
-                            message_text += "All your reactions with our Twitter posts will receive a reward in klks on the address that we have just provided to you.\r\n"
-                            message_text += "Now you can download your address from here: https://tip.kalkul.us/vault/" + newAddr + ".klks\r\n"
-                            message_text += "Please keep this file safe! If you lose it, you can't access your funds!\r\n\r\n"
-                            message_text += "You can decrypt this file at: \r\n"
-                            message_text += "https://tip.kalkul.us\r\n"
-                            message_text += "and import it in your favourite wallet.\r\n"
-                            message_text += "You can decrypt it using this password: " + password + "\r\n\r\n"
-                            message_text += "ATTENTION: We don't store that password so please SAFELY STORE IT where you prefer and DESTROY THIS MESSAGE! Keep your funds SAFE! THIS MESSAGE WILL BE DESTROYED FROM OUR TWITTER FOR SECURITY REASON. NO ONE CAN RECOVER YOUR PASSWORD IF YOU LOSE OR FORGET IT.\r\n\r\n"
-                            message_text += "ADDITIONAL INFO:\r\n- To receive bounty you must have an active Twitter account since "+ process.env.MIN_DAYS +" days\r\n- You can react with our post and receive $klks every " + process.env.MIN_TIMEFRAME + " minutes"
+                        var message_text = "Your Kalkulus (KLKS) address have been created!\r\n"
+                        message_text += "All your reactions with our Twitter posts will receive a reward in klks on the address that we have just provided to you.\r\n"
+                        message_text += "Now you can download your address from here: https://tip.kalkul.us/vault/" + newAddr + ".klks\r\n"
+                        message_text += "Please keep this file safe! If you lose it, you can't access your funds!\r\n\r\n"
+                        message_text += "You can decrypt this file at: \r\n"
+                        message_text += "https://tip.kalkul.us\r\n"
+                        message_text += "and import it in your favourite wallet.\r\n"
+                        message_text += "You can decrypt it using this password: " + password + "\r\n\r\n"
+                        message_text += "ATTENTION: We don't store that password so please SAFELY STORE IT where you prefer and DESTROY THIS MESSAGE! Keep your funds SAFE! THIS MESSAGE WILL BE DESTROYED FROM OUR TWITTER FOR SECURITY REASON. NO ONE CAN RECOVER YOUR PASSWORD IF YOU LOSE OR FORGET IT.\r\n\r\n"
+                        message_text += "ADDITIONAL INFO:\r\n- To receive bounty you must have an active Twitter account since "+ process.env.MIN_DAYS +" days\r\n- You can react with our post and receive $klks every " + process.env.MIN_TIMEFRAME + " minutes"
 
-                            var result = await message(
-                                twitter_user,
-                                message_text
-                            )
+                        var result = await message(
+                            twitter_user,
+                            message_text
+                        )
 
-                            if(result === true){
-                                pubAddr = newwallet['address']
-                                db.set('ADDRESS_' + twitter_user,pubAddr)
-                                var tx = await sendtip(pubAddr,amount,twitter_user)
-                                response(tx)
-                            }else{
-                                response(false)
-                            }
-                        })
-                    }else{
-                        response(false)
-                    }
-                });
+                        if(result === true){
+                            pubAddr = newwallet['address']
+                            db.set('ADDRESS_' + twitter_user,pubAddr)
+                            var tx = await sendtip(pubAddr,amount,twitter_user)
+                            response(tx)
+                        }else{
+                            response(false)
+                        }
+                }else{
+                    response(false)
+                }
             }
         }else{
             console.log('USER WAS TIPPED IN THE PAST ' + process.env.MIN_TIMEFRAME + ' MINUTES, BAD LUCK!')
